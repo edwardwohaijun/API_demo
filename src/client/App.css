@@ -1,0 +1,76 @@
+html, body {
+  height: 100%;
+  margin: 0;
+}
+body {
+  background: #e4e4e4;
+}
+
+#root {
+  height: 100%;
+}
+.App {
+  min-height: 100%;
+  display: flex;
+  flex-direction: column;
+  font: 14px/1.5 "Helvetica Neue",Helvetica,Arial,"Microsoft Yahei","Hiragino Sans GB","Heiti SC","WenQuanYi Micro Hei",sans-serif;
+}
+
+.app-header, .app-footer {
+  flex-shrink: 0;
+}
+
+.app-header {
+  height: 64px;
+  display: flex;
+}
+
+.app-body {
+  display: flex;
+}
+.app-sidebar {
+  background: #0c2f57;
+  width: 160px;
+  flex-shrink: 0;
+  display: flex;
+  flex-direction: column;
+}
+
+.app-footer {
+  height: 64px;
+}
+
+/*
+.app-body {
+  flex-grow: 1;
+}
+*/
+
+.app-main {
+  background: #f4f5fa;
+  width: 100%;
+  padding: 18px;
+  overflow-x: auto
+}
+
+.secondary-text {
+  color: #9e9e9e;
+}
+
+/* by default, the labels in field are display: block, I need to put a <label>error msg</label> besides it, hence inline */
+.field-label {
+  display: inline!important; 
+}
+.error-span {
+  display: inline-block;
+  margin-left: 8px;
+  color: #FF0000;
+}
+
+.username-link {
+  color: blue;
+  text-decoration: underline;
+}
+.username-link:hover {
+  cursor: pointer;
+}
