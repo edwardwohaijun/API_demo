@@ -18,7 +18,8 @@ let user_Schema = mongoose.Schema({
   // id: String, // add indexing on this field to improve performance.
   name: String,
   dob: Date,
-  address: String, // geolocation: {lat, longt}
+  geolocation: {latitude: {type: Number}, longitude: {type: Number}},
+  address: String,
   description: String,
   createdAt: String,
 
@@ -31,32 +32,6 @@ let user_Schema = mongoose.Schema({
   }]
 })
 
-// _id: '0', name: '周姗0', email: '0@dmedGlobal.com', level: 'CRA II', onboardDate: '2017-07-03',
-//location: 'SH', manager: '16', isReleased: true, isOutsourced: true, assignedSites: ['1000', '1001', '1002'], role: 2, dataEntryAllowed: false,  },
-// this collection also serves the user login purpose
-/*
-let CRA_Schema = mongoose.Schema({
-  versionKey: false,
-  name: String,
-  loginName: String,
-  password: String,
-  // password: String, // todo: to be implemented soon
-  // email: String, // todo: depreicate it
-  level: String,
-  onboardDate: Date,
-  offboardDate: Date, 
-  location: String,
-  // manager: mongoose.Schema.Types.ObjectId,
-  manager: String,
-  // isReleased: Boolean,
-  // isOutsourced: Boolean,
-  // assignedSites: [mongoose.Schema.Types.ObjectId],
-  assignedSites: [String], // 主要给 CRA 用
-  assignedProjects: [String], // this field is for project manager only
-  role: Number,
-  dataEntryAllowed: Boolean,
-});
-*/
 
 exports.user = mongoose.model('user', user_Schema);
 

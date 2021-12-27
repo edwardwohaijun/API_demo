@@ -7,6 +7,7 @@ import { Label, Menu, Table, Button, Icon, Header, Image, Modal, Input, Form  } 
 
 import ProfileInfo from './ProfileInfo';
 import FollowingInfo from './FollowingInfo';
+import Nearby from './Nearby';
 
 // import logo from './logo.svg';
 // import { Route, BrowserRouter, Switch } from "react-router-dom";
@@ -33,8 +34,6 @@ class App extends Component {
     }
   }
 
-
-
   toggleProfileModal = () => {
     if (this.state.profileOpen) { // about to close modal, we need to reset currentUserId to prevent the next open use the old userId
       this.setState({ profileOpen: !this.state.profileOpen, currentUserId: null })
@@ -52,7 +51,15 @@ class App extends Component {
   }
 
   toggleNearby = () => {
-    
+    if (this.state.nearbyOpen) { // ditto
+      this.setState({ nearbyOpen: !this.state.nearbyOpen, currentUserId: null })
+    } else { // ditto
+      this.setState({ nearbyOpen: !this.state.nearbyOpen })
+    }
+  }
+
+  showNearby = evt => {    
+    this.setState({ currentUserId: evt.target.dataset.userid }, this.toggleNearby)
   }
 
   onDeleteUser = evt => {
@@ -132,7 +139,7 @@ class App extends Component {
 
   render() {
     // console.log('entries from backend: ', this.props.profile);
-    const {currentUserId, profileOpen, followingOpen, userList} = this.state;
+    const {currentUserId, profileOpen, followingOpen, nearbyOpen, userList} = this.state;
     let currentUserName = '';
     if (currentUserId != null) {
       currentUserName = userList.find(u => u._id == currentUserId).name;
@@ -149,6 +156,11 @@ class App extends Component {
             {
               !followingOpen ? null :
               <FollowingInfo userId={currentUserId} name={currentUserName} open={true} toggleModal={this.toggleFolloingModal} onFollow={this.onFollow} onUnfollow={this.onUnfollow} />
+            }
+
+            {
+              !nearbyOpen ? null :
+              <Nearby userId={currentUserId} name={currentUserName} open={true} toggleModal={this.toggleNearby} />
             }
 
             <Table celled>
@@ -177,7 +189,7 @@ class App extends Component {
                         <Table.Cell>{u.followersLength}</Table.Cell>
                         <Table.Cell >
                           <Button icon data-userid={u._id} onClick={this.onDeleteUser}>Remove</Button>
-                          <Button icon data-userid={u._id} onClick={this.toggleNearby}>Nearby friends</Button>
+                          <Button icon data-userid={u._id} onClick={this.showNearby}>Nearby friends</Button>
                         </Table.Cell>
                       </Table.Row>
                     )
@@ -186,7 +198,9 @@ class App extends Component {
               </Table.Body>
               <Table.Footer>
                 <Table.Row>
-                  <Table.HeaderCell colSpan='7'>
+                  <Table.HeaderCell colSpan='6'></Table.HeaderCell>
+
+                  <Table.HeaderCell>
                     <Button icon onClick={this.toggleProfileModal}><Icon name='plus' /></Button>
                   </Table.HeaderCell>
                 </Table.Row>

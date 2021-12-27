@@ -1,32 +1,17 @@
-const path = require('path');
-const fs = require('fs');
 const express = require('express');
-const config = require('../config/index')
 const multer  = require('multer')
-const hash = require('../utils/hash');
+
+const haversine = require('haversine-distance')
 
 
 const jwt = require('jsonwebtoken');
 
 const mongoose = require('mongoose');
 const mongoSchema = require('../models/index');
-const { site, project, CRA, user } = mongoSchema;
+const { user } = mongoSchema;
 const router = express.Router();
 const jwtSecret = 'shhhh, keep your voice down'; // todo: 设置 expire
 const asyncWrapper = require('./utils/asyncWrapper');
-
-// todo: how to handle error?
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, config.APP_UPLOADS_DIR);
-  },
-  filename: (req, file, cb) => {
-    // const fileId = mongoose.Types.ObjectId().toString();
-    // req.fileId = fileId; // after uploading, fileName is the mongoDB id, used to save in doc.
-    cb(null, mongoose.Types.ObjectId().toString());
-  }
-});
-const upload = multer({ storage });
 
 const tokenChecker = (req, res, next) => {
   console.log(' !req.headers.Authorization', req.headers)
@@ -62,7 +47,7 @@ router.get('/users', asyncWrapper(async (req, res, next) => {
   const userList = await user.aggregate([
     {
       $project: {
-        name: 1, dob: 1, address: 1, description: 1,
+        name: 1, dob: 1, address: 1, description: 1, geolocation: 1,
         followingLength: { $size: '$following'},
         followersLength: { $size: '$followers'},
       },
@@ -179,7 +164,35 @@ router.post('/user/unfollow', asyncWrapper(async(req, res, next) => {
 
 }))
 
+router.get('/user/:userId/nearby', asyncWrapper(async(req, res, next) => {
+  let userInfo = await user.findById(req.params.userId).exec();
+  let userGeolocation = userInfo.geolocation;
+  console.log('current user geoLocation: ', userGeolocation);
+  let {following, followers} = userInfo;
+  let friends = following.concat(followers);
+  friends = new Set(friends); // there might be duplicate record in friends array(A follows B, B follows A), use Set to de-duplicate
+  friends = Array.from(friends);
+  console.log('get nearly friends: ', friends);
+  // todo: remove myself in friend, in case that I follow myself.
+  let friendsLocation = await user.find({'_id': {$in: friends}}).exec()
+  // let followerList = await user.find({'_id': {$in: followingList.following}}).lean().exec()
+  // let followingList = await user.findById(req.params.id).select('following').exec();
+  console.log('friends location: ', friendsLocation);
 
+  let distances = friendsLocation.map(l => {
+    return {
+      _id: l._id,
+      distance: (haversine(userGeolocation, l.geolocation) / 1000).toFixed(),
+      name: l.name,
+      description: l.description,
+      address: l.address,
+      dob: l.dob,
+    }
+  })
+  console.log('distances: ', distances)
+
+  res.status(200).send(distances);
+}))
 
 
 module.exports = router;
