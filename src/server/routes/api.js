@@ -53,14 +53,7 @@ const tokenChecker = (req, res, next) => {
   }
 };
 
-const entries = [
-  {label: 'Sites', id: 'sites', url: 'sites', accessibleRole: [0, 1, 2, 3]},
-  {label: 'Projects', id: 'projects', url: 'projects', accessibleRole: [0, 1, 2, 3]},
-  {label: 'CRAs', id: 'CRAs', url: 'CRAs', accessibleRole: [0, 1, 3]},
-  {label: 'Query', id: 'query', url: 'query', accessibleRole: [0, 1, 2, 3]},
-  {label: 'Administration', id: 'administration', url: 'administration', accessibleRole: [0]}
-];
-
+// all API need to do some validation before writing into mongoDB
 
 
 // get user list
@@ -74,7 +67,7 @@ router.get('/users', asyncWrapper(async (req, res, next) => {
         followersLength: { $size: '$followers'},
       },
     }
-  ]).limit(100);  // find().limit(100);
+  ]).limit(100);
   res.status(200).send(userList);
 
 }))
@@ -88,8 +81,11 @@ router.get('/users', (req, res, next) => {
 router.post('/user', asyncWrapper(async (req, res, next) => {
   let newUser = new user(req.body);
   let savedUser = await newUser.save();
+  savedUser = savedUser.toObject();
+  savedUser.followingLength = 0;
+  savedUser.followersLength = 0;
+  console.log('saved user after creatoin: ', savedUser)
   res.status(200).send(savedUser)
-
 }))
 
 router.post('/user', (req, res, next) => {
@@ -98,11 +94,22 @@ router.post('/user', (req, res, next) => {
 })
 
 
+
 // update user profile
 router.put('/user', asyncWrapper(async (req, res, next) => {
-  // req.params.id will be populated.
+  let {_id, name, dob, address, description } = req.body;
+  let updatedUser = await user.findByIdAndUpdate(_id, {name, dob, address, description}, {new: true}).lean();
+  updatedUser.followingLength = updatedUser.following.length;
+  updatedUser.followersLength = updatedUser.followers.length;
 
+  console.log('updated User: ', updatedUser);
+  res.status(200).send(updatedUser);
 }))
+
+router.put('/user', (req, res, next) => {
+  console.log('err updating user');
+  res.status(500)
+})
 
 // delete a user
 // todo: check all documents with this :id in following, or in followers
@@ -114,15 +121,39 @@ router.delete('/user/:id', asyncWrapper(async(req, res, next) => {
   res.status(200).send();
 })) 
 
-// tricky part is: how to get the name(or full profile info) of each following
-router.get('/user/:id/following', (req, res, next) => {
+// get the current user's following info
+router.get('/user/:id/following', asyncWrapper(async(req, res, next) => {
   // db.collection.find( { _id : { $in : [1,2,3,4] } } );
-})
+  let followingList = await user.findById(req.params.id).select('following');
+  // let followingList2 = await user.find({'_id': {$in: [ ]}})
+  // 还要附上true, 他们是从个人的following array中读取出来的, 肯定是true.
+  console.log('following list of current user: ', req.params.id, '//', followingList);
+  res.status(200).send(followingList)
+}))
 
-// ditto
+// ditto, 暂时不做, 功能类似上例.
 router.get('/user/:id/follower', (req, res, next) => {
   // db.collection.find( { _id : { $in : [1,2,3,4] } } );
 })
+
+router.post('/check-following', asyncWrapper(async(req, res, next) => {
+  // req.body: userId, searchTerm, 返回该searchTerm(对应的用户)的profile, 和是否, 当前userId是following关系.
+  let { userId, searchTerm } = req.body;
+  console.log('req.body of search: ', req.body)
+  let userInfo = await user.findById( userId ).exec();
+  console.log('userInfo: ', userInfo);
+  // regex is low on performance
+  let searchTermInfo = await user.findOne({ name: { "$regex": searchTerm, "$options": "i"}}).lean().exec();
+  if (searchTermInfo != null) {
+    searchTermInfo.isFollowing = false;
+    if ( userInfo.following.findIndex(f => f._id == mongoose.Types.ObjectId(searchTermInfo._id)) != -1 ) {
+      searchTermInfo.isFollowing = true;
+    }
+  }
+
+  console.log('search result: ', searchTermInfo)
+  res.status(200).send(searchTermInfo);
+}))
 
 // add new following to current user
 router.put('/user/:id/following/:followingId', (req, res, next) => {
@@ -134,15 +165,7 @@ router.delete('/user/:id/following/:followingId', (req, res, next) => {
 
 })
 
-// add new follower
-router.put('/user/:id/follower/:followerId', (req, res, next) => {
 
-})
-
-// delete follower
-router.delete('/user/:id/follower/:followerId', (req, res, next) => {
-
-})
 
 
 module.exports = router;

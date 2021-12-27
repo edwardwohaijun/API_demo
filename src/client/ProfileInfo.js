@@ -18,15 +18,13 @@ class ProfileInfo extends Component {
     if (props.userId != null) {
       userInfo = props.userList.find(u => u._id == props.userId);
       // clone the user object, otherwise we are using a ref to the original object.
+      // this is slow, only used on small object.
       userInfo = JSON.parse(JSON.stringify(userInfo)); 
     }
 
     this.state = {
       userInfo: userInfo,
-
-
     }
-    // this.profile = { loggedIn: false, email: 'haijun.wo@dmedGlobal.com', username: 'Edward Wo' }
   }
 
   onFieldChange = evt => {
@@ -65,7 +63,6 @@ class ProfileInfo extends Component {
   }
 
   render() {
-    // console.log('entries from backend: ', this.props.profile);
     let p = this.props;
     let userInfo = this.state.userInfo;
     return (
@@ -98,12 +95,7 @@ class ProfileInfo extends Component {
                       <label>Description</label>
                       <input data-fieldid='description' value={userInfo.description || ''} onChange={this.onFieldChange} />
                     </Form.Field>
-
-
                   </Form>
-
-
-
 
                 </Modal.Description>
               </Modal.Content>
@@ -118,8 +110,6 @@ class ProfileInfo extends Component {
                 />
               </Modal.Actions>
             </Modal>
-
-
 
         </div>
       )

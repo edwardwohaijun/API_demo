@@ -6,6 +6,7 @@ import {initializeProfile, initializeAllCRAs, initializeAllProjects, initializeA
 import { Label, Menu, Table, Button, Icon, Header, Image, Modal, Input, Form  } from 'semantic-ui-react';
 
 import ProfileInfo from './ProfileInfo';
+import FollowingInfo from './FollowingInfo';
 
 // import logo from './logo.svg';
 // import { Route, BrowserRouter, Switch } from "react-router-dom";
@@ -27,7 +28,7 @@ class App extends Component {
       currentUserId: null,
 
       profileOpen: false,
-      profileFriendOpen: false,
+      followingOpen: false,
     }
     // this.profile = { loggedIn: false, email: 'haijun.wo@dmedGlobal.com', username: 'Edward Wo' }
   }
@@ -42,26 +43,12 @@ class App extends Component {
     }
   }
 
-  toggleFriendModal = () => {
-    this.setState({ profileFriendOpen: !this.state.profileFriendOpen })
-  }
-
-  onCreateUser = () => {
-    axios.post('/api/user', {
-      name: 'Edw', dob: new Date(), address: 'Earth', description: 'hehe', 
-    })
-    .then(res => {
-      console.log('res from creating user: ', res);
-      res.data.followingLength = 0; // bad practice, it's server's job to do this
-      res.data.followersLength = 0;
-      const userList = update(this.state.userList, {$push: [res.data]} );
-      this.setState({ userList })
-    })
-    .catch(err => {
-      console.log('creating user failed: ', err)
-    })
-
-    console.log('clicked')
+  toggleFolloingModal = () => {
+    if (this.state.followingOpen) { // ditto
+      this.setState({ followingOpen: !this.state.followingOpen, currentUserId: null })
+    } else { // ditto
+      this.setState({ followingOpen: !this.state.followingOpen })
+    }
   }
 
   onDeleteUser = evt => {
@@ -83,6 +70,10 @@ class App extends Component {
     console.log('on editing user: ', evt.target.dataset.userid);
     this.setState({ currentUserId: evt.target.dataset.userid }, this.toggleProfileModal);
   }
+  onEditFollowing = evt => {
+    console.log('on editing following of current user: ', evt.target.dataset.userid);
+    this.setState({ currentUserId: evt.target.dataset.userid }, this.toggleFolloingModal);
+  }
 
   onSaveChange = (userInfo) => {
     let userIdx = this.state.userList.findIndex(u => u._id == userInfo._id);
@@ -93,6 +84,14 @@ class App extends Component {
       userList = update(userList, {[userIdx]: {$set: userInfo}})
     }
     this.setState({ userList })
+  }
+
+  onFollow = () => {
+
+  }
+
+  onUnfollow = () => {
+
   }
 
 
@@ -109,7 +108,7 @@ class App extends Component {
 
   render() {
     // console.log('entries from backend: ', this.props.profile);
-    const {currentUserId, profileOpen, userList} = this.state;
+    const {currentUserId, profileOpen, followingOpen, userList} = this.state;
     return (
         <div className="App">
           <div className='app-header'>app-header</div>
@@ -117,6 +116,11 @@ class App extends Component {
 
             {!profileOpen ? null : 
               <ProfileInfo userList={userList} userId={currentUserId} open={true} toggleModal={this.toggleProfileModal} onSaveChange={this.onSaveChange} />
+            }
+
+            {
+              !followingOpen ? null :
+              <FollowingInfo userId={currentUserId} open={true} toggleModal={this.toggleFolloingModal} onFollow={this.onFollow} onUnfollow={this.onUnfollow} />
             }
 
             <Table celled>
@@ -141,7 +145,7 @@ class App extends Component {
                         <Table.Cell>{u.dob}</Table.Cell>
                         <Table.Cell>{u.address}</Table.Cell>
                         <Table.Cell>{u.description}</Table.Cell>
-                        <Table.Cell>{u.followingLength}</Table.Cell>
+                        <Table.Cell><span className='username-link' data-userid={u._id} onClick={this.onEditFollowing}>{u.followingLength}</span> </Table.Cell>
                         <Table.Cell>{u.followersLength}</Table.Cell>
                         <Table.Cell >
                           <Button icon data-userid={u._id} onClick={this.onDeleteUser}>Remove</Button>
