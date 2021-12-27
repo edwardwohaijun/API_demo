@@ -29,8 +29,8 @@ class App extends Component {
 
       profileOpen: false,
       followingOpen: false,
+      nearbyOpen: false,
     }
-    // this.profile = { loggedIn: false, email: 'haijun.wo@dmedGlobal.com', username: 'Edward Wo' }
   }
 
 
@@ -51,7 +51,14 @@ class App extends Component {
     }
   }
 
+  toggleNearby = () => {
+    
+  }
+
   onDeleteUser = evt => {
+    alert("not implemented yet")
+    // to be implemented
+    /*
     let userId = evt.target.dataset.userid
     axios.delete(`/api/user/${userId}`)
       .then(res => {
@@ -64,6 +71,7 @@ class App extends Component {
       .catch(err => {
         console.log('err deleteing user: ', err)
       })
+      */
   }
 
   onEditUser = evt => {
@@ -86,12 +94,28 @@ class App extends Component {
     this.setState({ userList })
   }
 
-  onFollow = () => {
+  onFollow = (userId, followerId) => {
+    let userIdx = this.state.userList.findIndex(u => u._id == userId);
+    let followerIdx = this.state.userList.findIndex(u => u._id == followerId);
+    if (userIdx == -1 || followerIdx == -1) {
+      return
+    }
 
+    let userList = update(this.state.userList, {[userIdx]: {followingLength: {$set: this.state.userList[userIdx].followingLength + 1 }}})
+    userList = update(userList, {[followerIdx]: {followersLength: {$set: this.state.userList[followerIdx].followersLength + 1}} });
+    this.setState({ userList })
   }
 
-  onUnfollow = () => {
+  onUnfollow = (userId, followerId) => {
+    let userIdx = this.state.userList.findIndex(u => u._id == userId);
+    let followerIdx = this.state.userList.findIndex(u => u._id == followerId);
+    if (userIdx == -1 || followerIdx == -1) {
+      return
+    }
 
+    let userList = update(this.state.userList, {[userIdx]: {followingLength: {$set: this.state.userList[userIdx].followingLength - 1 }}})
+    userList = update(userList, {[followerIdx]: {followersLength: {$set: this.state.userList[followerIdx].followersLength - 1 }}});
+    this.setState({ userList })
   }
 
 
@@ -109,6 +133,10 @@ class App extends Component {
   render() {
     // console.log('entries from backend: ', this.props.profile);
     const {currentUserId, profileOpen, followingOpen, userList} = this.state;
+    let currentUserName = '';
+    if (currentUserId != null) {
+      currentUserName = userList.find(u => u._id == currentUserId).name;
+    }
     return (
         <div className="App">
           <div className='app-header'>app-header</div>
@@ -120,7 +148,7 @@ class App extends Component {
 
             {
               !followingOpen ? null :
-              <FollowingInfo userId={currentUserId} open={true} toggleModal={this.toggleFolloingModal} onFollow={this.onFollow} onUnfollow={this.onUnfollow} />
+              <FollowingInfo userId={currentUserId} name={currentUserName} open={true} toggleModal={this.toggleFolloingModal} onFollow={this.onFollow} onUnfollow={this.onUnfollow} />
             }
 
             <Table celled>
@@ -149,6 +177,7 @@ class App extends Component {
                         <Table.Cell>{u.followersLength}</Table.Cell>
                         <Table.Cell >
                           <Button icon data-userid={u._id} onClick={this.onDeleteUser}>Remove</Button>
+                          <Button icon data-userid={u._id} onClick={this.toggleNearby}>Nearby friends</Button>
                         </Table.Cell>
                       </Table.Row>
                     )
@@ -157,7 +186,7 @@ class App extends Component {
               </Table.Body>
               <Table.Footer>
                 <Table.Row>
-                  <Table.HeaderCell colSpan='6'>
+                  <Table.HeaderCell colSpan='7'>
                     <Button icon onClick={this.toggleProfileModal}><Icon name='plus' /></Button>
                   </Table.HeaderCell>
                 </Table.Row>

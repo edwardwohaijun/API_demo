@@ -1,6 +1,7 @@
 import React, {Component} from 'react';
 import update from 'immutability-helper';
-import { Label, Menu, Table, Button, Icon, Header, Image, Modal, Input, Form  } from 'semantic-ui-react'
+import { Label, Menu, Table, Button, Icon, Header, Image, Modal, Input, Form  } from 'semantic-ui-react';
+import randomLocation from 'random-location';
 
 import axios from './utils/axios';
 
@@ -20,6 +21,12 @@ class ProfileInfo extends Component {
       // clone the user object, otherwise we are using a ref to the original object.
       // this is slow, only used on small object.
       userInfo = JSON.parse(JSON.stringify(userInfo)); 
+    }
+
+    // LATITUDE -90 to +90, LONGITUDE -180 to + 180
+    this.geoLocation = {longitude: 0, longitude: 0};
+    if (props.userId == null) { // create new user
+      this.geoLocation = randomLocation.randomCirclePoint({latitude: 0, longitude: 0}, 6371 * 1000); // 6371 is the radius of Earth (assuming it's an absolute sphere)
     }
 
     this.state = {
@@ -59,12 +66,16 @@ class ProfileInfo extends Component {
   }
 
   componentDidMount = () => {
-
+    if (this.props.userId == null) {
+      let userInfo = update(this.state.userInfo, {geolocation: {$set: this.geoLocation}})
+      this.setState({ userInfo })
+    }
   }
 
   render() {
     let p = this.props;
     let userInfo = this.state.userInfo;
+    // console.log("geoLocation: ", this.geoLocation);
     return (
         <div className="modal-wrapper">
             <Modal
@@ -87,8 +98,8 @@ class ProfileInfo extends Component {
                     </Form.Field>
 
                     <Form.Field>
-                      <label>Address</label>
-                      <input data-fieldid='address' value={userInfo.address || ''} onChange={this.onFieldChange} />
+                      <label>Address (ramdonly generated) { p.userId == null ? `lat(${this.geoLocation.latitude}), long(${this.geoLocation.longitude})` : `lat(${userInfo.geolocation.latitude}), long(${userInfo.geolocation.longitude})` })</label>
+                      <input data-fieldid='address' onChange={this.onFieldChange} value={userInfo.address || ''} />
                     </Form.Field>
 
                     <Form.Field>

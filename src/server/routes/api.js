@@ -79,6 +79,7 @@ router.get('/users', (req, res, next) => {
 
 // create new user
 router.post('/user', asyncWrapper(async (req, res, next) => {
+  console.log('new user creation: ', req.body)
   let newUser = new user(req.body);
   let savedUser = await newUser.save();
   savedUser = savedUser.toObject();
@@ -123,12 +124,14 @@ router.delete('/user/:id', asyncWrapper(async(req, res, next) => {
 
 // get the current user's following info
 router.get('/user/:id/following', asyncWrapper(async(req, res, next) => {
-  // db.collection.find( { _id : { $in : [1,2,3,4] } } );
-  let followingList = await user.findById(req.params.id).select('following');
-  // let followingList2 = await user.find({'_id': {$in: [ ]}})
+  console.log('myid: ', req.params.id)
+  let followingList = await user.findById(req.params.id).select('following').exec();
+  console.log('following list: ', followingList)
+  let followerList = await user.find({'_id': {$in: followingList.following}}).lean().exec()
+  followerList.forEach(f => f.isFollowing = true);
   // 还要附上true, 他们是从个人的following array中读取出来的, 肯定是true.
-  console.log('following list of current user: ', req.params.id, '//', followingList);
-  res.status(200).send(followingList)
+  console.log('follower: ', followerList);
+  res.status(200).send(followerList)
 }))
 
 // ditto, 暂时不做, 功能类似上例.
@@ -139,14 +142,12 @@ router.get('/user/:id/follower', (req, res, next) => {
 router.post('/check-following', asyncWrapper(async(req, res, next) => {
   // req.body: userId, searchTerm, 返回该searchTerm(对应的用户)的profile, 和是否, 当前userId是following关系.
   let { userId, searchTerm } = req.body;
-  console.log('req.body of search: ', req.body)
   let userInfo = await user.findById( userId ).exec();
-  console.log('userInfo: ', userInfo);
-  // regex is low on performance
+  // regex is low on performance, so only one record is returned
   let searchTermInfo = await user.findOne({ name: { "$regex": searchTerm, "$options": "i"}}).lean().exec();
   if (searchTermInfo != null) {
     searchTermInfo.isFollowing = false;
-    if ( userInfo.following.findIndex(f => f._id == mongoose.Types.ObjectId(searchTermInfo._id)) != -1 ) {
+    if ( userInfo.following.findIndex(f => f._id.equals(searchTermInfo._id)) != -1 ) {
       searchTermInfo.isFollowing = true;
     }
   }
@@ -155,15 +156,28 @@ router.post('/check-following', asyncWrapper(async(req, res, next) => {
   res.status(200).send(searchTermInfo);
 }))
 
-// add new following to current user
-router.put('/user/:id/following/:followingId', (req, res, next) => {
+// user follow another user
+router.post('/user/follow', asyncWrapper(async(req, res, next) => {
+  let {userId, followingId} = req.body;
+  // todo: check whether user is already following the other user.
+  let updatedUser = await user.findByIdAndUpdate(userId, {$push: {'following': mongoose.Types.ObjectId(followingId) }}, {new: true}).lean().exec();
+  let followerUser = await user.findByIdAndUpdate(followingId, {$push: {'followers': mongoose.Types.ObjectId(userId) }}, {new: true}).lean().exec();
+  followerUser.isFollowing = true;
+  console.log('updated user: ', updatedUser, '//', followerUser)
+  res.status(200).send(followerUser);
+}))
 
-})
+// user unfollow another user
+router.post('/user/unfollow', asyncWrapper(async(req, res, next) => {
+  let {userId, followingId} = req.body;
+  // todo: check whether user is already unfollowing the other user.
+  let updatedUser = await user.updateOne({_id: userId}, {$pull: {'following': mongoose.Types.ObjectId(followingId) }}, {new: true}).lean().exec();
+  let followerUser = await user.updateOne({_id: followingId}, {$pull: {'followers': mongoose.Types.ObjectId(userId) }}, {new: true}).lean().exec();
+  followerUser.isFollowing = false;
+  console.log('updated user: ', updatedUser, '//', followerUser)
+  res.status(200).send(followerUser);
 
-// delete a following to current user
-router.delete('/user/:id/following/:followingId', (req, res, next) => {
-
-})
+}))
 
 
 
