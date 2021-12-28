@@ -40,7 +40,7 @@ app.use(function(req, res, next) {
 // app.use('/api', apiRoute);
 
 app.get('*', (req, res) => {
-  console.log('catch all req: ', )
+  console.log('catch all req: ', req.url)
   res.render('index.ejs', {})
 })
 

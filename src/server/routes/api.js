@@ -43,7 +43,7 @@ const tokenChecker = (req, res, next) => {
 
 // get user list
 router.get('/users', asyncWrapper(async (req, res, next) => {
-  // const {siteId, field, attachmentId} = req.body;
+  console.log('getting req from /users...')
   const userList = await user.aggregate([
     {
       $project: {
@@ -54,7 +54,7 @@ router.get('/users', asyncWrapper(async (req, res, next) => {
     }
   ]).limit(100);
   res.status(200).send(userList);
-
+  console.log('res of getting user: ', userList)
 }))
 
 router.get('/users', (req, res, next) => {
@@ -136,7 +136,6 @@ router.post('/check-following', asyncWrapper(async(req, res, next) => {
       searchTermInfo.isFollowing = true;
     }
   }
-
   console.log('search result: ', searchTermInfo)
   res.status(200).send(searchTermInfo);
 }))
@@ -147,7 +146,7 @@ router.post('/user/follow', asyncWrapper(async(req, res, next) => {
   // todo: check whether user is already following the other user.
   let updatedUser = await user.findByIdAndUpdate(userId, {$push: {'following': mongoose.Types.ObjectId(followingId) }}, {new: true}).lean().exec();
   let followerUser = await user.findByIdAndUpdate(followingId, {$push: {'followers': mongoose.Types.ObjectId(userId) }}, {new: true}).lean().exec();
-  followerUser.isFollowing = true;
+  followerUser.isFollowing = true; // bad naming, should be "isBeingFollowed"
   console.log('updated user: ', updatedUser, '//', followerUser)
   res.status(200).send(followerUser);
 }))
@@ -156,12 +155,11 @@ router.post('/user/follow', asyncWrapper(async(req, res, next) => {
 router.post('/user/unfollow', asyncWrapper(async(req, res, next) => {
   let {userId, followingId} = req.body;
   // todo: check whether user is already unfollowing the other user.
-  let updatedUser = await user.updateOne({_id: userId}, {$pull: {'following': mongoose.Types.ObjectId(followingId) }}, {new: true}).lean().exec();
-  let followerUser = await user.updateOne({_id: followingId}, {$pull: {'followers': mongoose.Types.ObjectId(userId) }}, {new: true}).lean().exec();
-  followerUser.isFollowing = false;
+  let updatedUser = await user.findByIdAndUpdate({_id: userId}, {$pull: {'following': mongoose.Types.ObjectId(followingId) }}, {new: true}).lean().exec();
+  let followerUser = await user.findByIdAndUpdate({_id: followingId}, {$pull: {'followers': mongoose.Types.ObjectId(userId) }}, {new: true}).lean().exec();
+  followerUser.isFollowing = false; // bad naming, should be "isBeingFollowed"
   console.log('updated user: ', updatedUser, '//', followerUser)
   res.status(200).send(followerUser);
-
 }))
 
 router.get('/user/:userId/nearby', asyncWrapper(async(req, res, next) => {
