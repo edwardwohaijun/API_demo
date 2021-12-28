@@ -1,5 +1,4 @@
 const express = require('express');
-const multer  = require('multer')
 
 const haversine = require('haversine-distance')
 
@@ -38,8 +37,7 @@ const tokenChecker = (req, res, next) => {
   }
 };
 
-// all API need to do some validation before writing into mongoDB
-
+// todo: all API need to do some validation before writing into mongoDB
 
 // get user list
 router.get('/users', asyncWrapper(async (req, res, next) => {
@@ -162,6 +160,8 @@ router.post('/user/unfollow', asyncWrapper(async(req, res, next) => {
   res.status(200).send(followerUser);
 }))
 
+// get user's nearby friends(with their distances)
+// by friends, this means: followers and following
 router.get('/user/:userId/nearby', asyncWrapper(async(req, res, next) => {
   let userInfo = await user.findById(req.params.userId).exec();
   let userGeolocation = userInfo.geolocation;
