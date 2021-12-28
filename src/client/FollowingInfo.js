@@ -2,7 +2,6 @@ import React, {Component} from 'react';
 import {connect} from "react-redux";
 import {bindActionCreators} from "redux";
 import update from 'immutability-helper';
-import {initializeProfile, initializeAllCRAs, initializeAllProjects, initializeAllSites } from './actions';
 import { Label, Menu, Table, Button, Icon, Header, Image, Modal, Input, Form  } from 'semantic-ui-react'
 
 
