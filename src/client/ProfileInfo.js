@@ -80,7 +80,7 @@ class ProfileInfo extends Component {
     }
 
     if (this.props.userId == null) { // create new user
-      axios.post('/api/user', this.state.userInfo)
+      axios.post('/API_demo/api/user', this.state.userInfo)
         .then(res => {
           console.log('res from creating new user: ', res);
           this.props.onSaveChange( res.data );
@@ -90,7 +90,7 @@ class ProfileInfo extends Component {
           console.log('err creating user: ', err)
         })
     } else { // edit existing user
-      axios.put('/api/user', this.state.userInfo)
+      axios.put('/API_demo/api/user', this.state.userInfo)
         .then(res => {
           console.log('res from editing user: ', res);
           this.props.onSaveChange( res.data );
@@ -125,23 +125,23 @@ class ProfileInfo extends Component {
                 <Modal.Description>
                   <Form>
                     <Form.Field>
-                      <div style={{display: 'flex'}}><label>Name</label>{ errFieldId == 'name' ? <span style={{color: 'red'}}> ({errMessage}</span> : null })  </div>
+                      <div style={{display: 'flex'}}><label>Name</label>{ errFieldId == 'name' ? <span style={{color: 'red'}}> ({errMessage}</span> : null } </div>
                       <input data-fieldid='name' value={userInfo.name || ''} onChange={this.onFieldChange} />
                     </Form.Field>
 
                     <Form.Field>
-                      <div style={{display: 'flex'}}><label>Date of birth</label>{ errFieldId == 'dob' ? <span style={{color: 'red'}}> ({errMessage}</span> : null }) </div> 
+                      <div style={{display: 'flex'}}><label>Date of birth</label>{ errFieldId == 'dob' ? <span style={{color: 'red'}}> ({errMessage}</span> : null }</div> 
                       <input data-fieldid='dob' value={userInfo.dob || ''} onChange={this.onFieldChange} />
                     </Form.Field>
 
                     <Form.Field>
                       <div style={{display: 'flex'}}><label>Address (ramdonly generated) { p.userId == null ? `lat(${this.geoLocation.latitude}), long(${this.geoLocation.longitude})` : `lat(${userInfo.geolocation.latitude}), long(${userInfo.geolocation.longitude})` })</label>
-                      { errFieldId == 'address' ? <span style={{color: 'red'}}> ({errMessage}</span> : null })</div>
+                      { errFieldId == 'address' ? <span style={{color: 'red'}}> ({errMessage}</span> : null }</div>
                       <input data-fieldid='address' onChange={this.onFieldChange} value={userInfo.address || ''} />
                     </Form.Field>
 
                     <Form.Field>
-                      <div style={{display: 'flex'}}><label>Description</label>{ errFieldId == 'description' ? <span style={{color: 'red'}}> ({errMessage}</span> : null })</div>
+                      <div style={{display: 'flex'}}><label>Description</label>{ errFieldId == 'description' ? <span style={{color: 'red'}}> ({errMessage}</span> : null }</div>
                       <input data-fieldid='description' value={userInfo.description || ''} onChange={this.onFieldChange} />
                     </Form.Field>
                   </Form>

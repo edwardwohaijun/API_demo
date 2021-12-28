@@ -67,7 +67,7 @@ class App extends Component {
     // to be implemented
     /*
     let userId = evt.target.dataset.userid
-    axios.delete(`/api/user/${userId}`)
+    axios.delete(`/API_demo/api/user/${userId}`)
       .then(res => {
         console.log('res from deleting user: ', res);
         let userIdx = this.state.userList.findIndex(u => u._id == userId);
@@ -82,11 +82,11 @@ class App extends Component {
   }
 
   onEditUser = evt => {
-    console.log('on editing user: ', evt.target.dataset.userid);
+    // console.log('on editing user: ', evt.target.dataset.userid);
     this.setState({ currentUserId: evt.target.dataset.userid }, this.toggleProfileModal);
   }
   onEditFollowing = evt => {
-    console.log('on editing following of current user: ', evt.target.dataset.userid);
+    // console.log('on editing following of current user: ', evt.target.dataset.userid);
     this.setState({ currentUserId: evt.target.dataset.userid }, this.toggleFolloingModal);
   }
 
@@ -127,9 +127,9 @@ class App extends Component {
 
 
   componentDidMount = () => {
-    axios.get('/api/users')
+    axios.get('/API_demo/api/users')
     .then(res => {
-      console.log('get user res: ', res);
+      // console.log('get user res: ', res);
       this.setState({ userList: res.data })
     })
     .catch(err => {
