@@ -23,7 +23,8 @@ let user_Schema = mongoose.Schema({
   description: String,
   createdAt: String,
 
-  // not scalable, each 
+  // not scalable, each document has a max 16MB limit, each objectId takes 12bytes
+  // 16Mb/12 = 1,333,333, so roughly speaking, following and followers can each has 666,666 values
   following: [{
     type: mongoose.Schema.ObjectId, default: [ ]
   }], // array of id
