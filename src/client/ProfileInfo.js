@@ -26,7 +26,7 @@ class ProfileInfo extends Component {
     // LATITUDE -90 to +90, LONGITUDE -180 to + 180
     this.geoLocation = {longitude: 0, longitude: 0};
     if (props.userId == null) { // create new user
-      this.geoLocation = randomLocation.randomCirclePoint({latitude: 0, longitude: 0}, 6371 * 1000); // 6371/km is the radius of Earth (assuming it's an absolute sphere)
+      this.geoLocation = randomLocation.randomCirclePoint({latitude: 0, longitude: 0}, 6371 * 1000); // 6371 km is the radius of Earth (assuming it's an absolute sphere)
     }
 
     this.state = {

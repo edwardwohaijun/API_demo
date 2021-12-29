@@ -30,27 +30,8 @@ class FollowingInfo extends Component {
     }
   }
 
-  // when modal open, show:
-  // my following people's info, since they are the one already being followed by me, each one record has a 'unfollow' button
-
-  // a search box: 
-  // userId, follower name (fuzzy search), only return one record (or none) for performance concern
-  // return: {followerInfo, following: true/false}, true: I already followed this one(with a unfollow button), false: not yet (with a follow button)
-
-  // 可否关注自己????????
-  // query parameter: userId/friendId, action: follow/unfollow
-  // return: 该friend的info, 客户端: 如果是follow, 则把其信息append到当前界面, 如果是unfollow, 找到其id, 当前界面上删除之.
-  // 同时勿忘本地的 following length +/- 1
-  // 该friend的follower +/- 1
-
-  // 点击clear的一刻, 再次发起getFollowingInfo fn, 用返回的数据覆盖当前, 别折腾了, 这个最简单.-
-
   onSearchChange = evt => this.setState({ searchTerm: evt.target.value })
 
-  // 返回的记录可能是已经follow, or unfollow了
-  // 不管点击follow还是unfollow, 后端返回followerInfo, 此时setState, 覆盖原有的followingResult, 
-  // 但由于此时还处于searching mode, 界面上手动调用parent 的 onFollow/onUnfollow, 把parent的信息更新一下
-  // 
   goSearch = () => {
     if (this.state.searchTerm.trim() == '') {
       // todo: pop up a message box telling user: it can't be empty
@@ -99,17 +80,14 @@ class FollowingInfo extends Component {
     console.log('on follow evt: ', followingId)
   }
 
-
-  // search界面上先点击 follow, 再unfollow, 此时记录为空, 但记录所在的横条, 还在, 按钮还在.
   onUnfollow = (evt) => {
     let p = this.props;
     let followingId = evt.target.dataset.followingid
     axios.post('/API_demo/api/user/unfollow', {userId: p.userId, followingId: followingId})
       .then(res => {
-        // todo: 这里要判断是searching mode or not
         if (this.state.searchingMode) {
           console.log(' in searching mmode, unfollow res: ', res.data)
-          // in searching mode, only one record is returned, and since we are unfollowing the only record
+          // in searching mode, only one record is returned, and since we are unfollowing the only record,
           // the result should be null
           this.setState({ searchResult: null });
         } else {

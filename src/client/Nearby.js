@@ -10,9 +10,6 @@ import './App.css';
 
 axios.defaults.headers.Authorization = 'Bearer ' + window.localStorage.getItem('jwt');
 
-// after follow/unfollow, the one being followed also need to be updated
-// what value need to be returned by server after a follow/unfollow operation:
-
 class Nearby extends Component {
   constructor(props) {
     super(props);
@@ -39,7 +36,6 @@ class Nearby extends Component {
 
   render() {
     let p = this.props;
-    // let { searchResult, followingResult, searchingMode } = this.state;
     return (
         <div className="modal-wrapper">
             <Modal

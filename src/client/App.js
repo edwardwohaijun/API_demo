@@ -216,13 +216,3 @@ class App extends Component {
 }
 
 export default App;
-/*
-const mapStateToProps = state => ({
-  profile: state.profile,
-  sites: state.sites,
-  projects: state.projects,
-  CRAs: state.CRAs,
-});
-const mapDispatchToProps = dispatch => bindActionCreators({ initializeProfile, initializeAllCRAs, initializeAllProjects, initializeAllSites }, dispatch);
-export default connect(mapStateToProps, mapDispatchToProps)(App);
-*/
